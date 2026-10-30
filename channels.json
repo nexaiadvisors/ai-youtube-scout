@@ -1,0 +1,15 @@
+{
+  "channels": [
+    {"name": "Greg Isenberg", "channel_id": "UCPjNBjflYl0-HQtUvOx0Ibw", "tier": 1},
+    {"name": "Nick Saraev", "channel_id": "UCbo-KbSjJDG6JWQ_MTZ_rNA", "tier": 1},
+    {"name": "Nate Herk | AI Automation", "channel_id": "UC2ojq-nuP8ceeHqiroeKhBA", "tier": 1},
+    {"name": "Matt Wolfe", "channel_id": "UChpleBmo18P08aKCIgti38g", "tier": 1},
+    {"name": "Riley Brown", "channel_id": "UCMcoud_ZW7cfxeIugBflSBw", "tier": 1}
+  ],
+  "pillars": {
+    "Claude & Harnesses": ["claude", "skill", "agent", "harness", "mcp", "subagent", "notebooklm", "cursor"],
+    "Agency & Revenue": ["client", "agency", "workflow", "system", "voice", "lead", "business"],
+    "Video & Content": ["video", "remotion", "motion", "reels", "shorts", "youtube"],
+    "Frontier Models": ["opus", "sonnet", "kimi", "gemini", "benchmark", "tested"]
+  }
+}
