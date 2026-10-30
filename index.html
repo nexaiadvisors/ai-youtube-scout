@@ -3,303 +3,951 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI YouTube Scout &amp; Video Insights Dashboard</title>
+<title>AI YouTube Scout · Personal Research Instrument</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Geist:wght@400;500;600&family=Instrument+Sans:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #f6f8f4;
-  --surface: #ffffff;
-  --surface-alt: #eef2eb;
-  --ink: #10291f;
-  --muted: #55665d;
-  --line: #dce2d8;
-  --accent: #b84a27;
-  --accent-soft: #fdf1ed;
-  --green: #146c43;
-  --green-soft: #e7f4ed;
-  --blue: #1d4ed8;
-  --blue-soft: #eff6ff;
-  --shadow: 0 10px 30px rgba(16, 41, 31, 0.06);
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
-}
-.topbar {
-  background: var(--ink);
-  color: #fff;
-  padding: 14px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-.brand { display: flex; align-items: center; gap: 14px; }
-.brand-badge {
-  background: var(--accent);
-  color: #fff;
-  font-weight: 800;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  padding: 5px 10px;
-  border-radius: 6px;
-  text-transform: uppercase;
-}
-.brand h1 { font-size: 19px; font-weight: 800; margin: 0; }
-.brand p { margin: 2px 0 0; font-size: 12.5px; color: rgba(255,255,255,0.72); }
-.stats-strip { display: flex; gap: 10px; }
-.stat-pill {
-  background: rgba(255,255,255,0.09);
-  border: 1px solid rgba(255,255,255,0.14);
-  border-radius: 9px;
-  padding: 6px 12px;
-  display: flex;
-  flex-direction: column;
-}
-.stat-pill .v { font-size: 16px; font-weight: 800; color: #fff; }
-.stat-pill .l { font-size: 10.5px; color: rgba(255,255,255,0.7); text-transform: uppercase; }
-.toolbar {
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
-  padding: 10px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.filters { display: flex; gap: 6px; }
-.filter-btn {
-  background: var(--surface-alt);
-  color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 99px;
-  padding: 5px 12px;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.filter-btn.active, .filter-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
-.toolbar-right { display: flex; align-items: center; gap: 8px; }
-.search-input {
-  padding: 6px 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  font-size: 12.5px;
-  width: 220px;
-  background: var(--bg);
-}
-.workspace {
-  display: grid;
-  grid-template-columns: 450px 1fr;
-  height: calc(100vh - 115px);
-  overflow: hidden;
-}
-.feed-col {
-  border-right: 1px solid var(--line);
-  overflow-y: auto;
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.video-card {
-  background: var(--surface);
-  border: 1.5px solid var(--line);
-  border-radius: 14px;
-  padding: 16px;
-  cursor: pointer;
-}
-.video-card.selected {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(184, 74, 39, 0.14);
-}
-.card-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 8px; }
-.badge {
-  font-size: 11px;
-  font-weight: 800;
-  padding: 3px 7px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-.badge.scouted { background: var(--accent-soft); color: var(--accent); border: 1px solid #f2c7b8; }
-.badge.liked { background: var(--blue-soft); color: var(--blue); border: 1px solid #bfdbfe; }
-.badge.playlist { background: var(--green-soft); color: var(--green); border: 1px solid #b8dfc8; }
-.card-title { font-size: 16px; font-weight: 800; line-height: 1.3; margin: 0 0 6px; }
-.card-meta { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
-.card-summary { font-size: 13.5px; color: #2c3e35; line-height: 1.45; margin: 0 0 10px; }
-.pillar-row { display: flex; flex-wrap: wrap; gap: 6px; }
-.pillar-tag { font-size: 11px; font-weight: 600; background: var(--surface-alt); padding: 2px 8px; border-radius: 5px; }
-.detail-col { overflow-y: auto; padding: 28px 40px 80px; background: var(--surface); }
-.detail-header { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 24px; }
-.detail-kicker { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.detail-title { font-size: 28px; font-weight: 800; line-height: 1.2; margin: 0 0 12px; }
-.action-bar { display: flex; gap: 10px; margin-top: 14px; }
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 16px;
-  border-radius: 9px;
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: pointer;
-  border: 1px solid var(--line);
-  background: var(--surface-alt);
-  color: var(--ink);
-  text-decoration: none;
-}
-.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-.btn.green { background: var(--green); color: #fff; border-color: var(--green); }
-.player-box {
-  margin: 0 0 24px;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #000;
-  aspect-ratio: 16 / 9;
-  max-width: 820px;
-  display: none;
-}
-.player-box.open { display: block; }
-.player-box iframe { width: 100%; height: 100%; border: 0; }
-.takeaway-Banner {
-  background: var(--green-soft);
-  border-left: 5px solid var(--green);
-  padding: 18px 22px;
-  border-radius: 10px;
-  margin-bottom: 22px;
-}
-.takeaway-Banner h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; color: var(--green); }
-.takeaway-Banner p { margin: 0; font-size: 15.5px; font-weight: 600; }
-.ideas-box {
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 18px 22px;
-  margin-bottom: 26px;
-}
-.ideas-box h3 { margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: var(--accent); }
-.idea-item { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; font-size: 14.5px; font-weight: 600; }
-.brief-body table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 14px 0; }
-.brief-body th, .brief-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
-.brief-body th { background: var(--bg); }
+  /* ==========================================================================
+     scroll-craft taste floor (scrollcraft.css + taste.md)
+     Six colour roles, one accent (#d8ff3e), two font families + mono,
+     1px hairlines, top-lip edge light, tinted shadows, zero nested cards.
+     ========================================================================== */
+  :root {
+    --sc-canvas:      #08090b;
+    --sc-surface:     #101319;
+    --sc-surface-hi:  #161b24;
+    --sc-ink:         #f4f2ef;
+    --sc-ink-soft:    #9a9ea8;
+    --sc-ink-muted:   #646975;
+    --sc-accent:      #d8ff3e;
+    --sc-accent-ink:  #08090b;
+
+    --sc-hairline:        color-mix(in oklab, var(--sc-ink) 11%, transparent);
+    --sc-hairline-strong: color-mix(in oklab, var(--sc-ink) 22%, transparent);
+    --sc-edge:            inset 0 1px 0 color-mix(in oklab, var(--sc-ink) 10%, transparent);
+
+    --sc-font-display: "Instrument Sans", "Geist", system-ui, sans-serif;
+    --sc-font-text:    "Geist", system-ui, sans-serif;
+    --sc-font-mono:    "Geist Mono", ui-monospace, monospace;
+
+    --sc-track-tight:  -0.032em;
+    --sc-track-snug:   -0.018em;
+    --sc-track-normal: -0.004em;
+    --sc-track-wide:    0.075em;
+
+    --sc-1: 0.25rem;  --sc-2: 0.5rem;   --sc-3: 0.75rem;  --sc-4: 1rem;
+    --sc-5: 1.5rem;   --sc-6: 2rem;     --sc-7: 3rem;     --sc-8: 4rem;
+
+    --sc-r-sm: 6px;   --sc-r-md: 10px;
+
+    --sc-shadow-color: 220 45% 2%;
+    --sc-e2: 0 2px 4px hsl(var(--sc-shadow-color) / 0.28),
+             0 10px 24px -6px hsl(var(--sc-shadow-color) / 0.42);
+
+    --sc-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    background: var(--sc-canvas);
+    color: var(--sc-ink);
+    font-family: var(--sc-font-text);
+    font-size: 0.96rem;
+    line-height: 1.62;
+    letter-spacing: var(--sc-track-normal);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Browser surfaces */
+  ::selection { background: var(--sc-accent); color: var(--sc-accent-ink); }
+  :root { caret-color: var(--sc-accent); accent-color: var(--sc-accent); }
+  :focus-visible { outline: 2px solid var(--sc-accent); outline-offset: 2px; border-radius: var(--sc-r-sm); }
+  :where(table, .sc-nums) { font-variant-numeric: tabular-nums; }
+  @supports (scrollbar-color: auto) {
+    * { scrollbar-color: color-mix(in oklab, var(--sc-ink) 22%, transparent) transparent; scrollbar-width: thin; }
+  }
+
+  /* Subtle room grain so the off-black ground reads as a lit studio room */
+  .sc-grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 90;
+    opacity: 0.035; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
+  /* Top Instrument Header */
+  header.instrument-bar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--sc-6);
+    padding: 0.85rem var(--sc-5);
+    border-bottom: 1px solid var(--sc-hairline);
+    background: color-mix(in oklab, var(--sc-canvas) 92%, var(--sc-surface));
+    flex-shrink: 0;
+  }
+  .brand-lockup {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sc-3);
+  }
+  .brand-dot {
+    width: 8px; height: 8px; border-radius: 999px;
+    background: var(--sc-accent);
+    display: inline-block;
+    transform: translateY(-1px);
+  }
+  .brand-title {
+    font-family: var(--sc-font-display);
+    font-size: 1.08rem;
+    font-weight: 600;
+    letter-spacing: var(--sc-track-snug);
+    color: var(--sc-ink);
+    margin: 0;
+  }
+  .brand-sub {
+    font-family: var(--sc-font-mono);
+    font-size: 0.72rem;
+    letter-spacing: var(--sc-track-wide);
+    text-transform: uppercase;
+    color: var(--sc-ink-soft);
+  }
+
+  /* Telemetry ledger along the top bar */
+  .telemetry-strip {
+    display: flex;
+    align-items: center;
+    gap: var(--sc-5);
+    justify-self: center;
+  }
+  .tel-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    font-family: var(--sc-font-mono);
+    font-size: 0.75rem;
+    color: var(--sc-ink-soft);
+  }
+  .tel-val {
+    color: var(--sc-ink);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .tel-val--accent {
+    color: var(--sc-accent);
+  }
+  .tel-sep {
+    color: var(--sc-hairline-strong);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sc-3);
+  }
+  .btn-playlist {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.48rem 0.9rem;
+    border-radius: var(--sc-r-sm);
+    background: var(--sc-surface);
+    box-shadow: var(--sc-edge);
+    border: 1px solid var(--sc-hairline-strong);
+    color: var(--sc-ink);
+    font-family: var(--sc-font-mono);
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    transition: transform 160ms var(--sc-ease-out), border-color 160ms var(--sc-ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .btn-playlist:hover {
+      border-color: var(--sc-accent);
+      transform: translateY(-1px);
+    }
+  }
+  .btn-playlist:active { transform: scale(0.97); }
+
+  /* Filter & Search Sub-Bar */
+  nav.filter-rail {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sc-4);
+    padding: 0.55rem var(--sc-5);
+    border-bottom: 1px solid var(--sc-hairline);
+    background: var(--sc-canvas);
+    flex-shrink: 0;
+  }
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+  .fbtn {
+    appearance: none;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--sc-ink-soft);
+    padding: 0.32rem 0.7rem;
+    border-radius: var(--sc-r-sm);
+    font-family: var(--sc-font-text);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 150ms var(--sc-ease-out), background 150ms var(--sc-ease-out), border-color 150ms var(--sc-ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .fbtn:hover { color: var(--sc-ink); background: var(--sc-surface); }
+  }
+  .fbtn.active {
+    background: var(--sc-surface-hi);
+    color: var(--sc-accent);
+    border-color: color-mix(in oklab, var(--sc-accent) 38%, transparent);
+    box-shadow: var(--sc-edge);
+  }
+  .search-input {
+    width: 260px;
+    padding: 0.36rem 0.75rem;
+    border-radius: var(--sc-r-sm);
+    border: 1px solid var(--sc-hairline);
+    background: var(--sc-surface);
+    color: var(--sc-ink);
+    font-size: 0.82rem;
+    transition: border-color 160ms var(--sc-ease-out);
+  }
+  .search-input::placeholder { color: var(--sc-ink-muted); }
+  .search-input:focus { outline: none; border-color: var(--sc-accent); }
+
+  /* Two-Pane Workspace */
+  main.workspace {
+    display: grid;
+    grid-template-columns: 470px 1fr;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Left Feed Rail: Real Video Thumbnails + Relevance Score + Suitability Explanation */
+  aside.feed-rail {
+    border-right: 1px solid var(--sc-hairline);
+    overflow-y: auto;
+    background: var(--sc-canvas);
+  }
+  .feed-item {
+    display: block;
+    padding: var(--sc-4) var(--sc-5);
+    border-bottom: 1px solid var(--sc-hairline);
+    cursor: pointer;
+    position: relative;
+    transition: background 160ms var(--sc-ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .feed-item:hover { background: color-mix(in oklab, var(--sc-surface) 65%, var(--sc-canvas)); }
+  }
+  .feed-item.active {
+    background: var(--sc-surface);
+    box-shadow: var(--sc-edge);
+  }
+  .feed-item.active::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--sc-accent);
+  }
+
+  .feed-top {
+    display: grid;
+    grid-template-columns: 168px 1fr;
+    gap: 0.9rem;
+    align-items: start;
+  }
+  .thumb-frame {
+    position: relative;
+    width: 168px;
+    height: 94px;
+    border-radius: var(--sc-r-sm);
+    overflow: hidden;
+    background: var(--sc-surface-hi);
+    box-shadow: var(--sc-e2), var(--sc-edge);
+    border: 1px solid var(--sc-hairline);
+  }
+  .thumb-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 240ms var(--sc-ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .feed-item:hover .thumb-frame img { transform: scale(1.03); }
+  }
+  /* Corner scrim protecting the score badge over the thumbnail */
+  .thumb-scrim {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(135deg,
+      color-mix(in oklab, var(--sc-canvas) 88%, transparent) 0%,
+      color-mix(in oklab, var(--sc-canvas) 35%, transparent) 38%,
+      transparent 65%);
+  }
+  .score-badge {
+    position: absolute;
+    top: 6px; left: 6px;
+    padding: 0.14rem 0.44rem;
+    border-radius: 4px;
+    background: var(--sc-accent);
+    color: var(--sc-accent-ink);
+    font-family: var(--sc-font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .dur-chip {
+    position: absolute;
+    bottom: 6px; right: 6px;
+    padding: 0.1rem 0.38rem;
+    border-radius: 4px;
+    background: color-mix(in oklab, var(--sc-canvas) 86%, transparent);
+    color: var(--sc-ink);
+    font-family: var(--sc-font-mono);
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .feed-meta {
+    min-width: 0;
+  }
+  .feed-kicker {
+    font-family: var(--sc-font-mono);
+    font-size: 0.67rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sc-ink-soft);
+    margin-bottom: 0.3rem;
+    line-height: 1.35;
+  }
+  .feed-kicker .queued-dot {
+    color: var(--sc-accent);
+    font-weight: 600;
+  }
+  .feed-title {
+    font-family: var(--sc-font-display);
+    font-size: 0.98rem;
+    font-weight: 600;
+    line-height: 1.24;
+    letter-spacing: var(--sc-track-snug);
+    color: var(--sc-ink);
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  /* Suitability explanation below the thumbnail in the left rail */
+  .suitability-box {
+    margin-top: 0.72rem;
+    padding-top: 0.62rem;
+    border-top: 1px solid color-mix(in oklab, var(--sc-ink) 7%, transparent);
+  }
+  .factor-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.32rem;
+    margin-bottom: 0.38rem;
+  }
+  .factor-chip {
+    font-family: var(--sc-font-mono);
+    font-size: 0.66rem;
+    color: var(--sc-ink);
+    background: color-mix(in oklab, var(--sc-ink) 7%, transparent);
+    padding: 0.12rem 0.42rem;
+    border-radius: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .feed-item.active .factor-chip {
+    background: color-mix(in oklab, var(--sc-accent) 14%, transparent);
+    color: var(--sc-accent);
+  }
+  .why-text {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--sc-ink-soft);
+    text-wrap: pretty;
+  }
+  .why-label {
+    color: var(--sc-ink);
+    font-weight: 500;
+  }
+
+  /* Right Stage: Editorial Brief + Inline Cinema Player */
+  section.brief-stage {
+    overflow-y: auto;
+    padding: var(--sc-6) var(--sc-7) var(--sc-8);
+    background: var(--sc-canvas);
+  }
+  .stage-inner {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  /* Composed Hero Split: Editorial Title + Suitability Math Left, 16:9 Cinema Stage Right */
+  .hero-split {
+    display: grid;
+    grid-template-columns: 1fr 390px;
+    gap: var(--sc-6);
+    align-items: start;
+    padding-bottom: var(--sc-6);
+    border-bottom: 1px solid var(--sc-hairline);
+  }
+  .hero-kicker {
+    font-family: var(--sc-font-mono);
+    font-size: 0.74rem;
+    letter-spacing: var(--sc-track-wide);
+    text-transform: uppercase;
+    color: var(--sc-accent);
+    margin-bottom: var(--sc-2);
+  }
+  .hero-title {
+    font-family: var(--sc-font-display);
+    font-size: clamp(1.65rem, 2.2vw, 2.3rem);
+    font-weight: 600;
+    line-height: 1.06;
+    letter-spacing: var(--sc-track-tight);
+    color: var(--sc-ink);
+    text-wrap: balance;
+    margin: 0 0 var(--sc-3) 0;
+  }
+  .hero-telemetry {
+    font-family: var(--sc-font-mono);
+    font-size: 0.76rem;
+    color: var(--sc-ink-soft);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: var(--sc-4);
+  }
+
+  /* Relevance Breakdown Block inside the Hero */
+  .suitability-ledger {
+    background: var(--sc-surface);
+    box-shadow: var(--sc-edge);
+    border: 1px solid var(--sc-hairline);
+    border-radius: var(--sc-r-md);
+    padding: 0.9rem 1.1rem;
+  }
+  .ledger-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 0.45rem;
+  }
+  .ledger-label {
+    font-family: var(--sc-font-mono);
+    font-size: 0.7rem;
+    letter-spacing: var(--sc-track-wide);
+    text-transform: uppercase;
+    color: var(--sc-ink-soft);
+  }
+  .ledger-score {
+    font-family: var(--sc-font-mono);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--sc-accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .ledger-why {
+    margin: 0 0 0.65rem 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--sc-ink);
+    text-wrap: pretty;
+  }
+  .ledger-factors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .ledger-factor {
+    font-family: var(--sc-font-mono);
+    font-size: 0.7rem;
+    padding: 0.18rem 0.5rem;
+    border-radius: 4px;
+    background: color-mix(in oklab, var(--sc-accent) 12%, transparent);
+    color: var(--sc-accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Right Column of Hero: 16:9 Cinema Stage */
+  .cinema-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+  .cinema-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--sc-r-md);
+    overflow: hidden;
+    background: var(--sc-surface-hi);
+    box-shadow: var(--sc-e2), var(--sc-edge);
+    border: 1px solid var(--sc-hairline-strong);
+  }
+  .cinema-stage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .cinema-stage iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+  .cinema-scrim {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top,
+      color-mix(in oklab, var(--sc-canvas) 88%, transparent) 0%,
+      color-mix(in oklab, var(--sc-canvas) 28%, transparent) 48%,
+      transparent 78%);
+  }
+  .btn-watch-inline {
+    position: absolute;
+    left: 14px; bottom: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.52rem 0.95rem;
+    border-radius: var(--sc-r-sm);
+    background: var(--sc-accent);
+    color: var(--sc-accent-ink);
+    border: none;
+    font-family: var(--sc-font-display);
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--sc-e2);
+    transition: transform 160ms var(--sc-ease-out), opacity 160ms var(--sc-ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .btn-watch-inline:hover { transform: translateY(-1px); }
+  }
+  .btn-watch-inline:active { transform: scale(0.97); }
+
+  .cinema-links {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--sc-font-mono);
+    font-size: 0.72rem;
+    color: var(--sc-ink-soft);
+  }
+  .cinema-links a {
+    color: var(--sc-ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--sc-hairline-strong);
+    padding-bottom: 1px;
+  }
+  .cinema-links a:hover { color: var(--sc-accent); border-color: var(--sc-accent); }
+
+  /* Section 1: 90-Second Bottom Line Lede */
+  .section-block {
+    padding-block: var(--sc-6);
+    border-bottom: 1px solid var(--sc-hairline);
+  }
+  .section-label {
+    font-family: var(--sc-font-mono);
+    font-size: 0.72rem;
+    letter-spacing: var(--sc-track-wide);
+    text-transform: uppercase;
+    color: var(--sc-ink-soft);
+    margin-bottom: var(--sc-3);
+    display: block;
+  }
+  .bottom-line-lede {
+    font-family: var(--sc-font-text);
+    font-size: clamp(1.04rem, 1.22vw, 1.18rem);
+    font-weight: 400;
+    line-height: 1.58;
+    letter-spacing: var(--sc-track-normal);
+    color: var(--sc-ink-soft);
+    max-width: 65ch;
+    margin: 0;
+    text-wrap: pretty;
+  }
+  .bottom-line-lede strong { color: var(--sc-ink); font-weight: 600; }
+  .bottom-line-lede code, .check-text code {
+    font-family: var(--sc-font-mono);
+    font-size: 0.85em;
+    background: var(--sc-surface-hi);
+    color: var(--sc-ink);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+  }
+
+  /* Section 2: Interactive 60-Day Goal Action Checklist (Hairline rows, no nested boxes) */
+  .checklist-rows {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--sc-hairline);
+  }
+  .check-row {
+    display: grid;
+    grid-template-columns: 32px 22px 1fr;
+    align-items: baseline;
+    gap: 0.65rem;
+    padding: 0.78rem 0.4rem;
+    border-bottom: 1px solid var(--sc-hairline);
+    cursor: pointer;
+    transition: background 150ms var(--sc-ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .check-row:hover { background: var(--sc-surface); }
+  }
+  .check-idx {
+    font-family: var(--sc-font-mono);
+    font-size: 0.74rem;
+    color: var(--sc-ink-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .check-row input[type="checkbox"] {
+    width: 15px; height: 15px;
+    margin: 0;
+    transform: translateY(2px);
+    cursor: pointer;
+  }
+  .check-text {
+    font-size: 0.94rem;
+    line-height: 1.5;
+    color: var(--sc-ink);
+    max-width: 66ch;
+  }
+  .check-row.done .check-text {
+    text-decoration: line-through;
+    color: var(--sc-ink-muted);
+  }
+
+  /* Section 3: Full Editorial Brief Typography & Tabular Tables */
+  .brief-content {
+    padding-top: var(--sc-5);
+  }
+  /* More space above a heading than below it (taste.md §Spacing) */
+  .brief-content h2 {
+    font-family: var(--sc-font-display);
+    font-size: 1.28rem;
+    font-weight: 600;
+    letter-spacing: var(--sc-track-snug);
+    color: var(--sc-ink);
+    margin: var(--sc-7) 0 var(--sc-3) 0;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--sc-hairline);
+  }
+  .brief-content h2:first-child { margin-top: var(--sc-2); }
+  .brief-content h3 {
+    font-family: var(--sc-font-display);
+    font-size: 1.04rem;
+    font-weight: 600;
+    color: var(--sc-ink);
+    margin: var(--sc-5) 0 var(--sc-2) 0;
+  }
+  .brief-content p, .brief-content li {
+    color: var(--sc-ink-soft);
+    max-width: 65ch;
+    text-wrap: pretty;
+  }
+  .brief-content strong { color: var(--sc-ink); font-weight: 600; }
+  .brief-content ul, .brief-content ol {
+    padding-left: 1.25rem;
+    margin: 0.5rem 0 1rem 0;
+  }
+  .brief-content li { margin-bottom: 0.38rem; }
+  .brief-content code {
+    font-family: var(--sc-font-mono);
+    font-size: 0.84em;
+    background: var(--sc-surface-hi);
+    color: var(--sc-ink);
+    padding: 0.12rem 0.38rem;
+    border-radius: 4px;
+  }
+  .brief-content pre {
+    background: var(--sc-surface);
+    box-shadow: var(--sc-edge);
+    border: 1px solid var(--sc-hairline);
+    padding: var(--sc-4);
+    border-radius: var(--sc-r-sm);
+    overflow-x: auto;
+  }
+  .brief-content pre code { background: none; padding: 0; }
+  .brief-content a {
+    color: var(--sc-accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+  }
+  .table-wrap {
+    margin: var(--sc-4) 0 var(--sc-5) 0;
+    overflow-x: auto;
+  }
+  .brief-content table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .brief-content th {
+    text-align: left;
+    font-family: var(--sc-font-mono);
+    font-size: 0.72rem;
+    letter-spacing: var(--sc-track-wide);
+    text-transform: uppercase;
+    color: var(--sc-ink-soft);
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid var(--sc-hairline-strong);
+  }
+  .brief-content td {
+    padding: 0.75rem 0.85rem;
+    border-bottom: 1px solid var(--sc-hairline);
+    color: var(--sc-ink-soft);
+    vertical-align: top;
+  }
+  .brief-content td strong { color: var(--sc-ink); }
 </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-badge">AI YouTube Scout</span>
-      <div>
-        <h1>Video Insights &amp; Idea Triage Dashboard</h1>
-        <p>Grounded in your Taste Profile · Creator RSS Scout · 1-Page Action Briefs</p>
-      </div>
-    </div>
-    <div class="stats-strip">
-      <div class="stat-pill"><span class="v">508</span><span class="l">Taste Profile Saves</span></div>
-      <div class="stat-pill"><span class="v">16</span><span class="l">Core Creators</span></div>
-      <div class="stat-pill"><span class="v">3</span><span class="l">1-Page Briefs Ready</span></div>
-      <div class="stat-pill"><span class="v">Top 3</span><span class="l">Queued to Playlist</span></div>
-    </div>
-  </header>
+<div class="sc-grain" aria-hidden="true"></div>
 
-  <div class="toolbar">
-    <div class="filters">
-      <button class="filter-btn active" data-filter="all">All Briefs (3)</button>
-      <button class="filter-btn" data-filter="scouted">AI Scouted</button>
-      <button class="filter-btn" data-filter="liked">Liked</button>
-      <button class="filter-btn" data-filter="Claude & Harnesses">Claude &amp; Harnesses</button>
-      <button class="filter-btn" data-filter="Video & Content">Video &amp; Content</button>
-    </div>
-    <div class="toolbar-right">
-      <input type="search" id="search" class="search-input" placeholder="Search briefs, creators, numbers...">
-      <a class="btn" href="taste-profile.example.md" target="_blank">Taste Profile</a>
-    </div>
+<header class="instrument-bar">
+  <div class="brand-lockup">
+    <span class="brand-dot"></span>
+    <h1 class="brand-title">AI YouTube Scout</h1>
+    <span class="brand-sub">Taste-Grounded Research Instrument</span>
   </div>
 
-  <div class="workspace">
-    <aside class="feed-col" id="feed"></aside>
-    <main class="detail-col" id="detail"></main>
+  <div class="telemetry-strip sc-nums">
+    <div class="tel-item"><span class="tel-val">508</span><span>Likes Audited</span></div>
+    <span class="tel-sep">/</span>
+    <div class="tel-item"><span class="tel-val">16</span><span>Core Creators</span></div>
+    <span class="tel-sep">/</span>
+    <div class="tel-item"><span class="tel-val">31 &rarr; 16</span><span>Tonight's Filter</span></div>
+    <span class="tel-sep">/</span>
+    <div class="tel-item"><span class="tel-val tel-val--accent">Top 3</span><span>Playlist Queued</span></div>
   </div>
+
+  <div class="header-actions">
+    <a class="btn-playlist" href="https://www.youtube.com/playlist?list=PLWcCQNkVAFxY7dc2743X1w3sS7PJ8bd5I" target="_blank" rel="noopener">
+      <span>Open "Worth Watching" Playlist &nearr;</span>
+    </a>
+  </div>
+</header>
+
+<nav class="filter-rail">
+  <div class="filter-group">
+    <button class="fbtn active" data-filter="all">All Scored Videos (3)</button>
+    <button class="fbtn" data-filter="scouted">AI Scouted Overnight</button>
+    <button class="fbtn" data-filter="playlist">Worth Watching Queue (Top 3)</button>
+    <button class="fbtn" data-filter="Claude & Harnesses">Claude &amp; Harnesses</button>
+    <button class="fbtn" data-filter="Agency & Revenue">Agency &amp; Revenue</button>
+    <button class="fbtn" data-filter="Video & Content">Video &amp; Content</button>
+  </div>
+  <input type="search" class="search-input" id="searchInput" placeholder="Filter by creator, model, or goal...">
+</nav>
+
+<main class="workspace">
+  <aside class="feed-rail" id="feedList"></aside>
+  <section class="brief-stage" id="detailPane"></section>
+</main>
 
 <script>
-const BRIEFS = [{"id": "2026-10-29-kimi-k3-vs-claude-opus-nick-saraev", "file": "briefs/2026-10-29-kimi-k3-vs-claude-opus-nick-saraev.md", "title": "I Tested China's New Model vs Claude Opus 5.5 (Kimi K3.1)", "url": "https://www.youtube.com/watch?v=OBzWl3Bw1JY", "yt_id": "OBzWl3Bw1JY", "channel": "Nick Saraev", "date": "2026-10-29", "origin_kind": "scouted", "origin_label": "AI Scouted · 2026-10-29", "score": 10, "chars": "14,916", "duration_label": "13 minutes", "in_playlist": true, "bottom_line": "Across 8 identical side-by-side coding tasks, Claude Opus 5.5 produced higher visual polish and geometry when it worked, but shipped broken/unverified builds in 2 of the 8 tests (a 3D keyboard that failed to load and a voxel game where the player could not move) because its harness did not verify runtime execution before finishing. Kimi K3.1 Pro finished faster (29m41s vs. 47m02s) at half the token price ($2/$10 per 1M tokens) and had fewer broken builds. Even frontier models at max effort ship broken interactive states unless your agent harness enforces an automated runtime smoke check.", "action_items": ["Enforce an automated browser smoke test (verify gate) after every UI build before marking a task complete.", "Benchmark a secondary worker model on one bounded, non-confidential evaluation task to compare cost and latency."], "pillars": ["Claude & Harnesses", "Agency & Revenue", "Video & Content"], "sort": ["2026-10-29", "23:59"], "body_html": "<ul><li>Date analyzed: 2026-10-29</li><li>Source: <a href=\"https://www.youtube.com/watch?v=OBzWl3Bw1JY\" target=\"_blank\" rel=\"noopener\">https://www.youtube.com/watch?v=OBzWl3Bw1JY</a> (Nick Saraev), scouted 2026-10-29 (score 10)</li><li>Transcript: complete, 14,916 characters (about 13 minutes). Fetched through Google NotebookLM.</li><li>Grounded in: <code>taste-profile.md</code></li></ul>\n<h3>1. Bottom line for you</h3>\n<p>Across 8 identical side-by-side coding tasks, Claude Opus 5.5 produced higher visual polish and geometry when it worked, but shipped broken/unverified builds in 2 of the 8 tests (a 3D keyboard that failed to load and a voxel game where the player could not move) because its harness did not verify runtime execution before finishing. Kimi K3.1 Pro finished faster (29m41s vs. 47m02s) at half the token price ($2/$10 per 1M tokens) and had fewer broken builds. Even frontier models at max effort ship broken interactive states unless your agent harness enforces an automated runtime smoke check.</p>\n<h3>2. Key ideas from the video</h3>\n<p>Self-interest labels: Speaker runs an automation agency and Skool community; states both models were tested on standard plans with no sponsor disclosure.</p>\n<div class=\"tbl\"><table><thead><tr><th>#</th><th>Idea</th><th>Detail</th></tr></thead><tbody><tr><td>1</td><td>Speed vs. polish tradeoff</td><td>Across 8 parallel builds at max effort, Kimi K3.1 Pro averaged 29m41s per build vs. 47m02s for Claude Opus 5.5.</td></tr><tr><td>2</td><td>Max-effort Opus still skips runtime verification</td><td>On 2 of 8 demos (3D mechanical keyboard and 3D exploration game), Opus delivered higher-resolution assets that failed on first load until prompted again.</td></tr><tr><td>3</td><td>Native Swarm &amp; clarifying-question UI</td><td>Kimi's web harness asks structured multiple-choice clarifying questions upfront and spawns parallel subagents to build 10 variations at once.</td></tr><tr><td>4</td><td>Half-price token economics</td><td>At $2/1M input and $10/1M output tokens, Kimi K3.1 Pro is roughly half the API cost of Opus 5.5 for background worker or judge lanes.</td></tr></tbody></table></div>\n<h3>3. How this applies to you</h3>\n<ul><li><strong>Claude &amp; Agent Harnesses:</strong> Pair frontier visual generation with an automated headless-browser verification step so broken interactive states never reach review.</li><li><strong>Multi-Agent Cost Control:</strong> Evaluate lower-cost frontier models as secondary judges or bulk workers while keeping Opus/Sonnet for primary architecture and UI polish.</li></ul>\n<h3>4. Suggested next steps</h3>\n<ol><li>Enforce an automated browser smoke test (<code>verify</code> gate) after every UI build before marking a task complete.</li><li>Benchmark a secondary worker model on one bounded, non-confidential evaluation task to compare cost and latency.</li></ol>"}, {"id": "2026-10-28-creative-context-os-three-files", "file": "briefs/2026-10-28-creative-context-os-three-files.md", "title": "Train Your AI to Write Like a Human With Just 3 Files", "url": "https://www.youtube.com/watch?v=yDFCJzDgWhI", "yt_id": "yDFCJzDgWhI", "channel": "Marketing Against the Grain", "date": "2026-10-28", "origin_kind": "liked", "origin_label": "Liked · 2026-10-28", "score": 9, "chars": "29,317", "duration_label": "29 minutes", "in_playlist": true, "bottom_line": "Most AI writing sounds like commodity filler because the model has general knowledge but zero point of view. Splitting context into three focused files—creator.md (how you think and write, built from real examples rather than adjectives), audience.md (five specific dream readers and their real bottlenecks), and taste.md (your quality bar, never-do list, and publish test)—lets an agent critique and draft with your actual voice.", "action_items": ["Maintain an explicit negative-filter list in taste-profile.md and enforce it with a deterministic check.", "Run a separate critic pass against taste-profile.md rather than stuffing every rule into a single generation prompt."], "pillars": ["Claude & Harnesses", "Agency & Revenue", "Video & Content"], "sort": ["2026-10-28", "12:00"], "body_html": "<ul><li>Date analyzed: 2026-10-28</li><li>Source: <a href=\"https://www.youtube.com/watch?v=yDFCJzDgWhI\" target=\"_blank\" rel=\"noopener\">https://www.youtube.com/watch?v=yDFCJzDgWhI</a> (Marketing Against the Grain), liked 2026-10-28 (score 9)</li><li>Transcript: complete, 29,317 characters (about 29 minutes). Fetched through Google NotebookLM.</li><li>Grounded in: <code>taste-profile.md</code></li></ul>\n<h3>1. Bottom line for you</h3>\n<p>Most AI writing sounds like commodity filler because the model has general knowledge but zero point of view. Splitting context into three focused files—<code>creator.md</code> (how you think and write, built from real examples rather than adjectives), <code>audience.md</code> (five specific dream readers and their real bottlenecks), and <code>taste.md</code> (your quality bar, never-do list, and publish test)—lets an agent critique and draft with your actual voice.</p>\n<h3>2. Key ideas from the video</h3>\n<p>Self-interest labels: Podcast published by HubSpot; promotes a lead-magnet prompt pack and an affiliated tool.</p>\n<div class=\"tbl\"><table><thead><tr><th>#</th><th>Idea</th><th>Detail</th></tr></thead><tbody><tr><td>1</td><td>The 3-file context architecture</td><td>Separate <code>creator.md</code> (voice &amp; real examples), <code>audience.md</code> (specific buyer profiles), and <code>taste.md</code> (quality bar &amp; negative rules).</td></tr><tr><td>2</td><td>Strip one-off viral outliers</td><td>Remove one-time launch announcements or outlier posts from your voice training set so the agent learns repeatable structure.</td></tr><tr><td>3</td><td>Sequential pass beats single mega-prompt</td><td>Loading all three files at once caused the model to ignore <code>taste.md</code>; running a dedicated second pass against <code>taste.md</code> caught AI tells reliably.</td></tr></tbody></table></div>\n<h3>3. How this applies to you</h3>\n<ul><li><strong>Claude &amp; Harnesses:</strong> Keep a dedicated <code>taste-profile.md</code> with explicit negative filters and run a separate verification pass after drafting.</li><li><strong>Agency &amp; Revenue:</strong> Package the 3-file interview (<code>creator.md</code>, <code>audience.md</code>, <code>taste.md</code>) as the onboarding step for any client content or communication system.</li></ul>\n<h3>4. Suggested next steps</h3>\n<ol><li>Maintain an explicit negative-filter list in <code>taste-profile.md</code> and enforce it with a deterministic check.</li><li>Run a separate critic pass against <code>taste-profile.md</code> rather than stuffing every rule into a single generation prompt.</li></ol>"}, {"id": "2026-10-29-show-me-your-workflow-ai-editing-instagram", "file": "briefs/2026-10-29-show-me-your-workflow-ai-editing-instagram.md", "title": "His AI Made 20 Reels Before Breakfast", "url": "https://www.youtube.com/watch?v=AtjFk9f44HE", "yt_id": "AtjFk9f44HE", "channel": "Matt Wolfe & Nate Herk", "date": "2026-10-28", "origin_kind": "liked", "origin_label": "Liked · 2026-10-28", "score": 9, "chars": "44,981", "duration_label": "38 minutes", "in_playlist": true, "bottom_line": "The highest-leverage pattern in this interview is building an agent skill from a \"golden set\" of proven work rather than inventing rules in a blank prompt. By having Claude Code study 27 top-performing human-edited videos frame by frame (extracting scene-change intervals, audio ducking levels, and graphic timing), every correction compounds into a reusable skill file instead of getting lost in chat history.", "action_items": ["Build a golden-set reference table from your top-performing videos or posts before tuning a new content skill.", "Add an automated contact-sheet and word-sync check before rendering any long-form video."], "pillars": ["Claude & Harnesses", "Agency & Revenue", "Video & Content"], "sort": ["2026-10-28", "12:00"], "body_html": "<ul><li>Date analyzed: 2026-10-29</li><li>Source: <a href=\"https://www.youtube.com/watch?v=AtjFk9f44HE\" target=\"_blank\" rel=\"noopener\">https://www.youtube.com/watch?v=AtjFk9f44HE</a> (Matt Wolfe &amp; Nate Herk), liked 2026-10-28 (score 9)</li><li>Transcript: complete, 44,981 characters (about 38 minutes). Fetched through Google NotebookLM.</li><li>Grounded in: <code>taste-profile.md</code></li></ul>\n<h3>1. Bottom line for you</h3>\n<p>The highest-leverage pattern in this interview is building an agent skill from a \"golden set\" of proven work rather than inventing rules in a blank prompt. By having Claude Code study 27 top-performing human-edited videos frame by frame (extracting scene-change intervals, audio ducking levels, and graphic timing), every correction compounds into a reusable skill file instead of getting lost in chat history.</p>\n<h3>2. Key ideas from the video</h3>\n<p>Self-interest labels: Guest sells a paid community and uses free repos as lead magnets; host runs a sponsored newsletter.</p>\n<div class=\"tbl\"><table><thead><tr><th>#</th><th>Idea</th><th>Detail</th></tr></thead><tbody><tr><td>1</td><td>Reverse-engineer a golden set</td><td>Analyze 20-27 proven examples by screenshotting every few seconds to record cut timing, layout patterns, and audio levels into a skill file.</td></tr><tr><td>2</td><td>Word timestamps + waveform silence check</td><td>Combine word-level transcription timestamps with an audio waveform check so cuts never clip the tail of a spoken word.</td></tr><tr><td>3</td><td>Screenshot verification loop</td><td>Bake \"screenshot every rendered element and verify it is inside safe bounds\" into any visual agent workflow.</td></tr><tr><td>4</td><td>Compounding feedback log</td><td>Save every human review correction back into the skill's rules file so the next run requires fewer manual edits.</td></tr></tbody></table></div>\n<h3>3. How this applies to you</h3>\n<ul><li><strong>Video &amp; Content Flywheel:</strong> Derive editing and layout presets directly from your best-performing uploads and verify every visual beat with a contact sheet before final render.</li><li><strong>Claude &amp; Harnesses:</strong> Log every human review fix into a persistent rules file so the agent never repeats the same layout or pacing mistake twice.</li></ul>\n<h3>4. Suggested next steps</h3>\n<ol><li>Build a golden-set reference table from your top-performing videos or posts before tuning a new content skill.</li><li>Add an automated contact-sheet and word-sync check before rendering any long-form video.</li></ol>"}];
-let activeFilter = 'all';
-let searchQuery = '';
-let selectedId = BRIEFS[0].id;
+const BRIEFS = [{"slug": "kimi-k3-vs-claude-opus-nick-saraev", "date": "2026-10-29", "title": "I Tested China's New Model vs Claude Opus 5.5 (Kimi K3.1)", "url": "https://www.youtube.com/watch?v=OBzWl3Bw1JY", "vid": "OBzWl3Bw1JY", "thumb_url": "https://i.ytimg.com/vi/OBzWl3Bw1JY/maxresdefault.jpg", "thumb_fallback": "https://i.ytimg.com/vi/OBzWl3Bw1JY/mqdefault.jpg", "creator": "Nick Saraev", "is_scouted": true, "score": "9.8", "factors": ["Creator Tier 1 (+4.0)", "Agent Harnesses (+3.0)", "8-Test Benchmark (+2.8)"], "why": "Tests whether Kimi K3.1 can replace Claude Opus 5.5 in your daily coding harness and proves why verification gates are mandatory when Opus ships broken builds.", "duration": "13m", "transcript_chars": "14,916", "in_playlist": true, "pillars": ["Claude & Harnesses", "Agency & Revenue", "Video & Content"], "bottom_line": "Across 8 identical side-by-side coding tasks, Claude Opus 5.5 produced higher visual polish and geometry when it worked, but shipped broken/unverified builds in 2 of the 8 tests (a 3D keyboard that failed to load and a voxel game where the player could not move) because its harness did not verify runtime execution before finishing. Kimi K3.1 Pro finished faster (29m41s vs. 47m02s) at half the token price ($2/$10 per 1M tokens) and had fewer broken builds. Even frontier models at max effort ship broken interactive states unless your agent harness enforces an automated runtime smoke check.", "actions": ["Enforce an automated browser smoke test (<code>verify</code> gate) after every UI build before marking a task complete.", "Benchmark a secondary worker model on one bounded, non-confidential evaluation task to compare cost and latency."], "body_html": "<ul>\n<li>Date analyzed: 2026-10-29</li>\n<li>Source: <a href=\"https://www.youtube.com/watch?v=OBzWl3Bw1JY\" target=\"_blank\" rel=\"noopener\">https://www.youtube.com/watch?v=OBzWl3Bw1JY</a> (Nick Saraev), scouted 2026-10-29 (score 10)</li>\n<li>Transcript: complete, 14,916 characters (about 13 minutes). Fetched through Google NotebookLM.</li>\n<li>Grounded in: <code>taste-profile.md</code></li>\n</ul>\n<h2>1. Bottom line for you</h2>\n<p>Across 8 identical side-by-side coding tasks, Claude Opus 5.5 produced higher visual polish and geometry when it worked, but shipped broken/unverified builds in 2 of the 8 tests (a 3D keyboard that failed to load and a voxel game where the player could not move) because its harness did not verify runtime execution before finishing. Kimi K3.1 Pro finished faster (29m41s vs. 47m02s) at half the token price ($2/$10 per 1M tokens) and had fewer broken builds. Even frontier models at max effort ship broken interactive states unless your agent harness enforces an automated runtime smoke check.</p>\n<h2>2. Key ideas from the video</h2>\n<p>Self-interest labels: Speaker runs an automation agency and Skool community; states both models were tested on standard plans with no sponsor disclosure.</p>\n<div class=\"table-wrap\"><table class=\"sc-nums\"><thead><tr><th>#</th><th>Idea</th><th>Detail</th></tr></thead><tbody>\n<tr><td>1</td><td>Speed vs. polish tradeoff</td><td>Across 8 parallel builds at max effort, Kimi K3.1 Pro averaged 29m41s per build vs. 47m02s for Claude Opus 5.5.</td></tr>\n<tr><td>2</td><td>Max-effort Opus still skips runtime verification</td><td>On 2 of 8 demos (3D mechanical keyboard and 3D exploration game), Opus delivered higher-resolution assets that failed on first load until prompted again.</td></tr>\n<tr><td>3</td><td>Native Swarm &amp; clarifying-question UI</td><td>Kimi&#x27;s web harness asks structured multiple-choice clarifying questions upfront and spawns parallel subagents to build 10 variations at once.</td></tr>\n<tr><td>4</td><td>Half-price token economics</td><td>At $2/1M input and $10/1M output tokens, Kimi K3.1 Pro is roughly half the API cost of Opus 5.5 for background worker or judge lanes.</td></tr>\n</tbody></table></div>\n<h2>3. How this applies to you</h2>\n<ul>\n<li><strong>Claude &amp; Agent Harnesses:</strong> Pair frontier visual generation with an automated headless-browser verification step so broken interactive states never reach review.</li>\n<li><strong>Multi-Agent Cost Control:</strong> Evaluate lower-cost frontier models as secondary judges or bulk workers while keeping Opus/Sonnet for primary architecture and UI polish.</li>\n</ul>\n<h2>4. Suggested next steps</h2>\n<ol>\n<li>Enforce an automated browser smoke test (<code>verify</code> gate) after every UI build before marking a task complete.</li>\n<li>Benchmark a secondary worker model on one bounded, non-confidential evaluation task to compare cost and latency.</li>\n</ol>"}, {"slug": "show-me-your-workflow-ai-editing-instagram", "date": "2026-10-29", "title": "His AI Made 20 Reels Before Breakfast", "url": "https://www.youtube.com/watch?v=AtjFk9f44HE", "vid": "AtjFk9f44HE", "thumb_url": "https://i.ytimg.com/vi/AtjFk9f44HE/maxresdefault.jpg", "thumb_fallback": "https://i.ytimg.com/vi/AtjFk9f44HE/mqdefault.jpg", "creator": "Matt Wolfe & Nate Herk", "is_scouted": true, "score": "9.6", "factors": ["Creator Tier 1 (+4.0)", "Video & Content (+3.0)", "Live Screen Demo (+2.6)"], "why": "Walks through Nate Herk's Opus 5.5 video-editing pipeline and content flywheel, directly applicable to your NexAI YouTube and multi-channel publishing studio.", "duration": "38m", "transcript_chars": "44,981", "in_playlist": true, "pillars": ["Claude & Harnesses", "Video & Content"], "bottom_line": "The highest-leverage pattern in this interview is building an agent skill from a &quot;golden set&quot; of proven work rather than inventing rules in a blank prompt. By having Claude Code study 27 top-performing human-edited videos frame by frame (extracting scene-change intervals, audio ducking levels, and graphic timing), every correction compounds into a reusable skill file instead of getting lost in chat history.", "actions": ["Build a golden-set reference table from your top-performing videos or posts before tuning a new content skill.", "Add an automated contact-sheet and word-sync check before rendering any long-form video."], "body_html": "<ul>\n<li>Date analyzed: 2026-10-29</li>\n<li>Source: <a href=\"https://www.youtube.com/watch?v=AtjFk9f44HE\" target=\"_blank\" rel=\"noopener\">https://www.youtube.com/watch?v=AtjFk9f44HE</a> (Matt Wolfe &amp; Nate Herk), liked 2026-10-28 (score 9)</li>\n<li>Transcript: complete, 44,981 characters (about 38 minutes). Fetched through Google NotebookLM.</li>\n<li>Grounded in: <code>taste-profile.md</code></li>\n</ul>\n<h2>1. Bottom line for you</h2>\n<p>The highest-leverage pattern in this interview is building an agent skill from a &quot;golden set&quot; of proven work rather than inventing rules in a blank prompt. By having Claude Code study 27 top-performing human-edited videos frame by frame (extracting scene-change intervals, audio ducking levels, and graphic timing), every correction compounds into a reusable skill file instead of getting lost in chat history.</p>\n<h2>2. Key ideas from the video</h2>\n<p>Self-interest labels: Guest sells a paid community and uses free repos as lead magnets; host runs a sponsored newsletter.</p>\n<div class=\"table-wrap\"><table class=\"sc-nums\"><thead><tr><th>#</th><th>Idea</th><th>Detail</th></tr></thead><tbody>\n<tr><td>1</td><td>Reverse-engineer a golden set</td><td>Analyze 20-27 proven examples by screenshotting every few seconds to record cut timing, layout patterns, and audio levels into a skill file.</td></tr>\n<tr><td>2</td><td>Word timestamps + waveform silence check</td><td>Combine word-level transcription timestamps with an audio waveform check so cuts never clip the tail of a spoken word.</td></tr>\n<tr><td>3</td><td>Screenshot verification loop</td><td>Bake &quot;screenshot every rendered element and verify it is inside safe bounds&quot; into any visual agent workflow.</td></tr>\n<tr><td>4</td><td>Compounding feedback log</td><td>Save every human review correction back into the skill&#x27;s rules file so the next run requires fewer manual edits.</td></tr>\n</tbody></table></div>\n<h2>3. How this applies to you</h2>\n<ul>\n<li><strong>Video &amp; Content Flywheel:</strong> Derive editing and layout presets directly from your best-performing uploads and verify every visual beat with a contact sheet before final render.</li>\n<li><strong>Claude &amp; Harnesses:</strong> Log every human review fix into a persistent rules file so the agent never repeats the same layout or pacing mistake twice.</li>\n</ul>\n<h2>4. Suggested next steps</h2>\n<ol>\n<li>Build a golden-set reference table from your top-performing videos or posts before tuning a new content skill.</li>\n<li>Add an automated contact-sheet and word-sync check before rendering any long-form video.</li>\n</ol>"}, {"slug": "creative-context-os-three-files", "date": "2026-10-28", "title": "Train Your AI to Write Like a Human With Just 3 Files", "url": "https://www.youtube.com/watch?v=yDFCJzDgWhI", "vid": "yDFCJzDgWhI", "thumb_url": "https://i.ytimg.com/vi/yDFCJzDgWhI/maxresdefault.jpg", "thumb_fallback": "https://i.ytimg.com/vi/yDFCJzDgWhI/mqdefault.jpg", "creator": "Marketing Against the Grain", "is_scouted": false, "score": "8.9", "factors": ["Claude & Harnesses (+3.5)", "Voice & Drafting (+3.0)", "3-File Pattern (+2.4)"], "why": "Shows how a 3-file Context OS (voice, examples, anti-slop rules) keeps AI writing human across LinkedIn, Substack, and client deliverables.", "duration": "29m", "transcript_chars": "29,317", "in_playlist": false, "pillars": ["Claude & Harnesses", "Agency & Revenue", "Video & Content"], "bottom_line": "Most AI writing sounds like commodity filler because the model has general knowledge but zero point of view. Splitting context into three focused files · <code>creator.md</code> (how you think and write, built from real examples rather than adjectives), <code>audience.md</code> (five specific dream readers and their real bottlenecks), and <code>taste.md</code> (your quality bar, never-do list, and publish test) · lets an agent critique and draft with your actual voice.", "actions": ["Maintain an explicit negative-filter list in <code>taste-profile.md</code> and enforce it with a deterministic check.", "Run a separate critic pass against <code>taste-profile.md</code> rather than stuffing every rule into a single generation prompt."], "body_html": "<ul>\n<li>Date analyzed: 2026-10-28</li>\n<li>Source: <a href=\"https://www.youtube.com/watch?v=yDFCJzDgWhI\" target=\"_blank\" rel=\"noopener\">https://www.youtube.com/watch?v=yDFCJzDgWhI</a> (Marketing Against the Grain), liked 2026-10-28 (score 9)</li>\n<li>Transcript: complete, 29,317 characters (about 29 minutes). Fetched through Google NotebookLM.</li>\n<li>Grounded in: <code>taste-profile.md</code></li>\n</ul>\n<h2>1. Bottom line for you</h2>\n<p>Most AI writing sounds like commodity filler because the model has general knowledge but zero point of view. Splitting context into three focused files · <code>creator.md</code> (how you think and write, built from real examples rather than adjectives), <code>audience.md</code> (five specific dream readers and their real bottlenecks), and <code>taste.md</code> (your quality bar, never-do list, and publish test) · lets an agent critique and draft with your actual voice.</p>\n<h2>2. Key ideas from the video</h2>\n<p>Self-interest labels: Podcast published by HubSpot; promotes a lead-magnet prompt pack and an affiliated tool.</p>\n<div class=\"table-wrap\"><table class=\"sc-nums\"><thead><tr><th>#</th><th>Idea</th><th>Detail</th></tr></thead><tbody>\n<tr><td>1</td><td>The 3-file context architecture</td><td>Separate <code>creator.md</code> (voice &amp; real examples), <code>audience.md</code> (specific buyer profiles), and <code>taste.md</code> (quality bar &amp; negative rules).</td></tr>\n<tr><td>2</td><td>Strip one-off viral outliers</td><td>Remove one-time launch announcements or outlier posts from your voice training set so the agent learns repeatable structure.</td></tr>\n<tr><td>3</td><td>Sequential pass beats single mega-prompt</td><td>Loading all three files at once caused the model to ignore <code>taste.md</code>; running a dedicated second pass against <code>taste.md</code> caught AI tells reliably.</td></tr>\n</tbody></table></div>\n<h2>3. How this applies to you</h2>\n<ul>\n<li><strong>Claude &amp; Harnesses:</strong> Keep a dedicated <code>taste-profile.md</code> with explicit negative filters and run a separate verification pass after drafting.</li>\n<li><strong>Agency &amp; Revenue:</strong> Package the 3-file interview (<code>creator.md</code>, <code>audience.md</code>, <code>taste.md</code>) as the onboarding step for any client content or communication system.</li>\n</ul>\n<h2>4. Suggested next steps</h2>\n<ol>\n<li>Maintain an explicit negative-filter list in <code>taste-profile.md</code> and enforce it with a deterministic check.</li>\n<li>Run a separate critic pass against <code>taste-profile.md</code> rather than stuffing every rule into a single generation prompt.</li>\n</ol>"}];
+let activeFilter = "all";
+let searchQuery = "";
+let selectedSlug = BRIEFS.length ? BRIEFS[0].slug : null;
+let playingInline = false;
+
+function matchesFilter(b) {
+  if (activeFilter === "scouted" && !b.is_scouted) return false;
+  if (activeFilter === "playlist" && !b.in_playlist) return false;
+  if (!["all", "scouted", "playlist"].includes(activeFilter)) {
+    if (!b.pillars.includes(activeFilter)) return false;
+  }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    const hay = (b.title + " " + b.creator + " " + b.why + " " + b.bottom_line + " " + b.pillars.join(" ")).toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  return true;
+}
 
 function renderFeed() {
-  const feed = document.getElementById('feed');
-  const q = searchQuery.toLowerCase();
-  const filtered = BRIEFS.filter(b => {
-    if (activeFilter === 'scouted' && b.origin_kind !== 'scouted') return false;
-    if (activeFilter === 'liked' && b.origin_kind !== 'liked') return false;
-    if (!['all','scouted','liked'].includes(activeFilter) && !b.pillars.includes(activeFilter)) return false;
-    if (q && !(b.title.toLowerCase().includes(q) || b.channel.toLowerCase().includes(q) || b.bottom_line.toLowerCase().includes(q))) return false;
-    return true;
+  const container = document.getElementById("feedList");
+  const filtered = BRIEFS.filter(matchesFilter);
+  if (filtered.length && !filtered.some(b => b.slug === selectedSlug)) {
+    selectedSlug = filtered[0].slug;
+    playingInline = false;
+  }
+  container.innerHTML = filtered.map(b => {
+    const isSel = b.slug === selectedSlug ? "active" : "";
+    const lane = b.is_scouted ? "AI SCOUTED" : "LIKED LIST";
+    const qBadge = b.in_playlist ? ` &middot; <span class="queued-dot">QUEUED</span>` : "";
+    const factorsHtml = (b.factors || []).map(f => `<span class="factor-chip">${f}</span>`).join("");
+    return `
+      <article class="feed-item ${isSel}" data-slug="${b.slug}">
+        <div class="feed-top">
+          <div class="thumb-frame">
+            <img src="${b.thumb_url}" onerror="this.onerror=null;this.src='${b.thumb_fallback}'" alt="${b.title.replace(/"/g, '&quot;')}" width="320" height="180" loading="lazy">
+            <div class="thumb-scrim"></div>
+            <span class="score-badge">${b.score} / 10</span>
+            <span class="dur-chip">${b.duration}</span>
+          </div>
+          <div class="feed-meta">
+            <div class="feed-kicker">${b.creator} &middot; ${lane}${qBadge}</div>
+            <h3 class="feed-title">${b.title}</h3>
+          </div>
+        </div>
+        <div class="suitability-box">
+          <div class="factor-row">${factorsHtml}</div>
+          <p class="why-text"><span class="why-label">Why it fits you:</span> ${b.why}</p>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  container.querySelectorAll(".feed-item").forEach(el => {
+    el.addEventListener("click", () => {
+      selectedSlug = el.getAttribute("data-slug");
+      playingInline = false;
+      renderFeed();
+      renderDetail();
+    });
   });
-
-  feed.innerHTML = filtered.map(b => `
-    <div class="video-card ${b.id === selectedId ? 'selected' : ''}" onclick="selectBrief('${b.id}')">
-      <div class="card-top">
-        <span class="badge ${b.origin_kind}">${b.origin_label}</span>
-        ${b.score ? `<span class="badge scouted">Score ${b.score}/10</span>` : ''}
-      </div>
-      <h3 class="card-title">${b.title}</h3>
-      <div class="card-meta"><strong>${b.channel}</strong> ${b.duration_label ? '· ' + b.duration_label : ''}</div>
-      <p class="card-summary">${b.bottom_line}</p>
-      <div class="pillar-row">${b.pillars.map(p => `<span class="pillar-tag">${p}</span>`).join('')}</div>
-    </div>
-  `).join('');
 }
 
-function selectBrief(id) {
-  selectedId = id;
-  renderFeed();
-  const b = BRIEFS.find(x => x.id === id) || BRIEFS[0];
-  document.getElementById('detail').innerHTML = `
-    <div class="detail-header">
-      <div class="detail-kicker">
-        <span class="badge ${b.origin_kind}">${b.origin_label}</span>
-        ${b.score ? `<span class="badge scouted">Taste Match Score: ${b.score}/10</span>` : ''}
-        <span style="color:var(--muted);font-size:13px">${b.channel} ${b.duration_label ? '· ' + b.duration_label : ''}</span>
+function renderDetail() {
+  const pane = document.getElementById("detailPane");
+  const b = BRIEFS.find(x => x.slug === selectedSlug);
+  if (!b) {
+    pane.innerHTML = `<div class="stage-inner"><p style="color:var(--sc-ink-soft);">No matching video briefs found.</p></div>`;
+    return;
+  }
+
+  const factorsHtml = (b.factors || []).map(f => `<span class="ledger-factor">${f}</span>`).join("");
+
+  const stageMedia = (playingInline && b.vid)
+    ? `<iframe src="https://www.youtube.com/embed/${b.vid}?autoplay=1&rel=0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+    : `<img src="${b.thumb_url}" onerror="this.onerror=null;this.src='${b.thumb_fallback}'" alt="${b.title.replace(/"/g, '&quot;')}" width="640" height="360">
+       <div class="cinema-scrim"></div>
+       <button class="btn-watch-inline" id="watchBtn">Play Video Inside Brief</button>`;
+
+  let checklistHtml = "";
+  if (b.actions && b.actions.length) {
+    const items = b.actions.map((act, idx) => {
+      const key = "scout_act_" + b.slug + "_" + idx;
+      const checked = localStorage.getItem(key) === "1";
+      const num = String(idx + 1).padStart(2, "0");
+      return `
+        <label class="check-row ${checked ? 'done' : ''}" data-key="${key}">
+          <span class="check-idx">${num}</span>
+          <input type="checkbox" ${checked ? 'checked' : ''}>
+          <span class="check-text">${act}</span>
+        </label>
+      `;
+    }).join("");
+    checklistHtml = `
+      <div class="section-block">
+        <span class="section-label">Actionable Ideas Extracted For Your 60-Day Goals</span>
+        <div class="checklist-rows">${items}</div>
       </div>
-      <h2 class="detail-title">${b.title}</h2>
-      <div class="action-bar">
-        ${b.yt_id ? `<button class="btn primary" onclick="toggleVideo('${b.yt_id}')">▶ Watch Video Here</button>` : ''}
-        ${b.url ? `<a class="btn" href="${b.url}" target="_blank" rel="noopener">↗ Open on YouTube</a>` : ''}
-        <a class="btn" href="${b.file}" target="_blank">📄 Raw Markdown</a>
+    `;
+  }
+
+  pane.innerHTML = `
+    <div class="stage-inner">
+      <div class="hero-split">
+        <div class="hero-left">
+          <div class="hero-kicker">RELEVANCE SCORE ${b.score} / 10 &middot; ${b.is_scouted ? 'SCOUTED VIA RSS' : 'AUDITED FROM LIKES'} &middot; ${b.date}</div>
+          <h2 class="hero-title">${b.title}</h2>
+          <div class="hero-telemetry">${b.creator} &middot; ${b.duration} video &middot; ${b.transcript_chars} chars analyzed &middot; 90-second read</div>
+          <div class="suitability-ledger">
+            <div class="ledger-head">
+              <span class="ledger-label">Why This Video Was Scored Suitable For You</span>
+              <span class="ledger-score">${b.score} / 10 Match</span>
+            </div>
+            <p class="ledger-why">${b.why}</p>
+            <div class="ledger-factors">${factorsHtml}</div>
+          </div>
+        </div>
+        <div class="cinema-box">
+          <div class="cinema-stage">${stageMedia}</div>
+          <div class="cinema-links">
+            <span>${b.in_playlist ? 'Queued in "Worth Watching" Playlist' : 'Brief-Only (No Watch Required)'}</span>
+            ${b.url ? `<a href="${b.url}" target="_blank" rel="noopener">Open on YouTube &nearr;</a>` : ''}
+          </div>
+        </div>
+      </div>
+
+      ${b.bottom_line ? `
+        <div class="section-block">
+          <span class="section-label">90-Second Bottom Line</span>
+          <p class="bottom-line-lede">${b.bottom_line}</p>
+        </div>
+      ` : ''}
+
+      ${checklistHtml}
+
+      <div class="brief-content">
+        ${b.body_html}
       </div>
     </div>
-    <div class="player-box" id="player-box"><iframe id="yt-iframe" src="" allowfullscreen></iframe></div>
-    <div class="takeaway-Banner"><h3>90-Second Bottom Line</h3><p>${b.bottom_line}</p></div>
-    <div class="ideas-box">
-      <h3>Actionable Ideas Extracted for Your 60-Day Goals</h3>
-      ${b.action_items.map(item => `<label class="idea-item"><input type="checkbox" checked><span>${item}</span></label>`).join('')}
-    </div>
-    <div class="brief-body">${b.body_html}</div>
   `;
+  pane.scrollTop = 0;
+
+  const watchBtn = document.getElementById("watchBtn");
+  if (watchBtn) {
+    watchBtn.addEventListener("click", () => {
+      playingInline = true;
+      renderDetail();
+    });
+  }
+
+  pane.querySelectorAll(".check-row").forEach(row => {
+    const cb = row.querySelector("input[type='checkbox']");
+    const key = row.getAttribute("data-key");
+    cb.addEventListener("change", () => {
+      if (cb.checked) {
+        localStorage.setItem(key, "1");
+        row.classList.add("done");
+      } else {
+        localStorage.removeItem(key);
+        row.classList.remove("done");
+      }
+    });
+  });
 }
 
-function toggleVideo(ytId) {
-  const box = document.getElementById('player-box');
-  const iframe = document.getElementById('yt-iframe');
-  if (box.classList.contains('open')) { box.classList.remove('open'); iframe.src = ''; }
-  else { box.classList.add('open'); iframe.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1'; }
-}
-
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    activeFilter = btn.dataset.filter;
+document.querySelectorAll(".fbtn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".fbtn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeFilter = btn.getAttribute("data-filter");
     renderFeed();
+    renderDetail();
   });
 });
-document.getElementById('search').addEventListener('input', e => { searchQuery = e.target.value; renderFeed(); });
+
+document.getElementById("searchInput").addEventListener("input", e => {
+  searchQuery = e.target.value.trim();
+  renderFeed();
+  renderDetail();
+});
+
 renderFeed();
-selectBrief(selectedId);
+renderDetail();
 </script>
 </body>
 </html>
